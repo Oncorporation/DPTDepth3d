@@ -10,7 +10,7 @@ torch.hub.download_url_to_file('http://images.cocodataset.org/val2017/0000000397
 feature_extractor = DPTFeatureExtractor.from_pretrained("Intel/dpt-large")
 model = DPTForDepthEstimation.from_pretrained("Intel/dpt-large")
 
-def write_depth(depth, bits):
+def compute_depth(depth, bits):
   depth_min = depth.min()
   depth_max = depth.max()
 
@@ -41,10 +41,7 @@ def process_image(image):
                  )
     prediction = prediction.squeeze().cpu().numpy()
     
-    # write predicted depth to file
-    write_depth(prediction, bits=2)
-    
-    result = Image.open("result.png")
+    result = compute_depth(prediction, bits=2)
     
     return result
     
