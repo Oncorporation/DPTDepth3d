@@ -2,4 +2,3 @@ torch
 git+https://github.com/nielsrogge/transformers.git@add_dpt_redesign#egg=transformers
 numpy
 Pillow
-opencv-python
