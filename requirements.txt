@@ -1,0 +1,2 @@
+torch
+git+git@github.com:NielsRogge/transformers.git@add_dpt_redesign
