@@ -20,11 +20,8 @@ def write_depth(depth, bits):
       out = max_val * (depth - depth_min) / (depth_max - depth_min)
   else:
       out = np.zeros(depth.shape, dtype=depth.dtype)
-
-  out = out/256
-  cv2.imwrite("result.png", out.astype("uint8"), [cv2.IMWRITE_PNG_COMPRESSION, 0])
-  
-  return
+ 
+  return out/65536
 
 def process_image(image):
     # prepare image for the model
@@ -57,7 +54,7 @@ examples =[['cats.jpg']]
 
 iface = gr.Interface(fn=process_image, 
                      inputs=gr.inputs.Image(type="pil"), 
-                     outputs=gr.outputs.Image(type="pil", label="predicted depth"),
+                     outputs=gr.outputs.Image(label="predicted depth"),
                      title=title,
                      description=description,
                      examples=examples,
