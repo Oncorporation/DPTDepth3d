@@ -1,5 +1,5 @@
 torch
-git+git@github.com:NielsRogge/transformers.git@add_dpt_redesign
+git+@github.com:NielsRogge/transformers.git@add_dpt_redesign
 numpy
 Pillow
 opencv-python
