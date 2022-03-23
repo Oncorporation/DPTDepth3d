@@ -32,8 +32,7 @@ def process_image(image):
     # forward pass
     with torch.no_grad():
        outputs = model(**encoding)
-    
-    predicted_depth = outputs.predicted_depth
+       predicted_depth = outputs.predicted_depth
     
     # interpolate to original size
     prediction = torch.nn.functional.interpolate(
@@ -55,16 +54,11 @@ title = "Interactive demo: DPT"
 description = "Demo for Intel's DPT, a Dense Prediction Transformer for state-of-the-art dense prediction tasks such as semantic segmentation and depth estimation."
 examples =[['cats.jpg']]
 
-css = ".output-image, .input-image {height: 40rem !important; width: 100% !important;}"
-#css = "@media screen and (max-width: 600px) { .output_image, .input_image {height:20rem !important; width: 100% !important;} }"
-# css = ".output_image, .input_image {height: 600px !important}"
-
 iface = gr.Interface(fn=process_image, 
                      inputs=gr.inputs.Image(type="pil"), 
                      outputs=gr.outputs.Image(type="pil", label="predicted depth"),
                      title=title,
                      description=description,
                      examples=examples,
-                     css=css,
                      enable_queue=True)
 iface.launch(debug=True)
