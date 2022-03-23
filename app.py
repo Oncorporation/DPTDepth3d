@@ -35,7 +35,7 @@ def process_image(image):
     predicted_depth = outputs.predicted_depth
     
     # interpolate to original size
-    predicted_depth = torch.nn.functional.interpolate(
+    prediction = torch.nn.functional.interpolate(
                         predicted_depth.unsqueeze(1),
                         size=image.size[::-1],
                         mode="bicubic",
