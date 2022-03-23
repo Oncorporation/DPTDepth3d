@@ -3,6 +3,7 @@ from transformers import DPTFeatureExtractor, DPTForDepthEstimation
 import torch
 import numpy as np
 import cv2
+from PIL import Image
 
 torch.hub.download_url_to_file('http://images.cocodataset.org/val2017/000000039769.jpg', 'cats.jpg')
 
