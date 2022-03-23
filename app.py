@@ -21,7 +21,8 @@ def write_depth(depth, bits):
   else:
       out = np.zeros(depth.shape, dtype=depth.dtype)
 
-  cv2.imwrite("result.png", out.astype("uint16"), [cv2.IMWRITE_PNG_COMPRESSION, 0])
+  out = out/256
+  cv2.imwrite("result.png", out.astype("uint8"), [cv2.IMWRITE_PNG_COMPRESSION, 0])
   
   return
 
