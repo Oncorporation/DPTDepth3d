@@ -2,24 +2,12 @@ import gradio as gr
 from transformers import DPTFeatureExtractor, DPTForDepthEstimation
 import torch
 import numpy as np
+from PIL import Image
 
 torch.hub.download_url_to_file('http://images.cocodataset.org/val2017/000000039769.jpg', 'cats.jpg')
 
 feature_extractor = DPTFeatureExtractor.from_pretrained("Intel/dpt-large")
 model = DPTForDepthEstimation.from_pretrained("Intel/dpt-large")
-
-def compute_depth(depth, bits):
-  depth_min = depth.min()
-  depth_max = depth.max()
-
-  max_val = (2 ** (8 * bits)) - 1
-
-  if depth_max - depth_min > np.finfo("float").eps:
-      out = max_val * (depth - depth_min) / (depth_max - depth_min)
-  else:
-      out = np.zeros(depth.shape, dtype=depth.dtype)
- 
-  return out/65536
 
 def process_image(image):
     # prepare image for the model
@@ -37,9 +25,10 @@ def process_image(image):
                         mode="bicubic",
                         align_corners=False,
                  )
-    prediction = prediction.squeeze().cpu().numpy()
-    
-    result = compute_depth(prediction, bits=2)
+    output = prediction.cpu().numpy()
+    formatted = (output * 255 / np.max(output)).astype('uint8')
+    img = Image.fromarray(formatted)
+    return img
     
     return result
     
@@ -49,7 +38,7 @@ examples =[['cats.jpg']]
 
 iface = gr.Interface(fn=process_image, 
                      inputs=gr.inputs.Image(type="pil"), 
-                     outputs=gr.outputs.Image(label="predicted depth"),
+                     outputs=gr.outputs.Image(type="pil", label="predicted depth"),
                      title=title,
                      description=description,
                      examples=examples,
