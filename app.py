@@ -24,7 +24,7 @@ def process_image(image):
                         size=image.size[::-1],
                         mode="bicubic",
                         align_corners=False,
-                 )
+                 ).squeeze()
     output = prediction.cpu().numpy()
     formatted = (output * 255 / np.max(output)).astype('uint8')
     img = Image.fromarray(formatted)
