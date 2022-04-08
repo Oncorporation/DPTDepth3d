@@ -1,10 +1,10 @@
 ---
-title: Dpt Depth Estimation
+title: Dpt Depth Estimation + 3D
 emoji: ⚡
 colorFrom: blue
 colorTo: red
 sdk: gradio
-sdk_version: 2.8.13
+sdk_version: 2.9.1
 app_file: app.py
 pinned: false
 ---
