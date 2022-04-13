@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 import open3d as o3d
 from pathlib import Path
+import os
 
 feature_extractor = DPTFeatureExtractor.from_pretrained("Intel/dpt-large")
 model = DPTForDepthEstimation.from_pretrained("Intel/dpt-large")
@@ -12,8 +13,11 @@ model = DPTForDepthEstimation.from_pretrained("Intel/dpt-large")
 
 def process_image(image_path):
     image_path = Path(image_path)
-    print(image_path)
-    image = Image.open(image_path)
+    image_raw = Image.open(image_path)
+    image = image_raw.resize(
+        (800, int(800 * image_raw.size[1] / image_raw.size[0])),
+        Image.Resampling.LANCZOS)
+
     # prepare image for the model
     encoding = feature_extractor(image, return_tensors="pt")
 
@@ -57,17 +61,20 @@ def create_3d_obj(rgb_image, depth_image, image_path):
     pcd.estimate_normals(
         search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.01, max_nn=30))
     pcd.transform([[1, 0, 0, 0],
-                [0, -1, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1]])
-
+                   [0, -1, 0, 0],
+                   [0, 0, -1, 0],
+                   [0, 0, 0, 1]])
+    pcd.transform([[-1, 0, 0, 0],
+                   [0, 1, 0, 0],
+                   [0, 0, 1, 0],
+                   [0, 0, 0, 1]])
 
     print('run Poisson surface reconstruction')
     with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
         mesh_raw, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
             pcd, depth=10, width=0, scale=1.1, linear_fit=True)
 
-    voxel_size = max(mesh_raw.get_max_bound() - mesh_raw.get_min_bound()) / 128
+    voxel_size = max(mesh_raw.get_max_bound() - mesh_raw.get_min_bound()) / 256
     print(f'voxel_size = {voxel_size:e}')
     mesh = mesh_raw.simplify_vertex_clustering(
         voxel_size=voxel_size,
@@ -86,8 +93,7 @@ def create_3d_obj(rgb_image, depth_image, image_path):
 
 title = "Demo: zero-shot depth estimation with DPT + 3D Point Cloud"
 description = "This demo is a variation from the original <a href='https://huggingface.co/spaces/nielsr/dpt-depth-estimation' target='_blank'>DPT Demo</a>. It uses the DPT model to predict the depth of an image and then uses 3D Point Cloud to create a 3D object."
-examples = [['./examples/jonathan-borba-CgWTqYxHEkg-unsplash.jpeg'],
-            ['./examples/amber-kipp-75715CVEJhI-unsplash.jpeg']]
+examples = [["examples/" + img] for img in os.listdir("examples/")]
 
 iface = gr.Interface(fn=process_image,
                      inputs=[gr.inputs.Image(
