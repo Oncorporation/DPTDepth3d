@@ -35,13 +35,21 @@ def process_image(image_path):
     ).squeeze()
     output = prediction.cpu().numpy()
     depth_image = (output * 255 / np.max(output)).astype('uint8')
-    gltf_path = create_3d_obj(np.array(image), depth_image, image_path)
-    img = Image.fromarray(depth_image)
+    try:
+        gltf_path = create_3d_obj(np.array(image), depth_image, image_path)
+        img = Image.fromarray(depth_image)
+        return [img, gltf_path, gltf_path]
+    except Exception as e:
+        gltf_path = create_3d_obj(
+            np.array(image), depth_image, image_path, depth=8)
+        img = Image.fromarray(depth_image)
+        return [img, gltf_path, gltf_path]
+    except:
+        print("Error reconstructing 3D model")
+        raise Exception("Error reconstructing 3D model")
 
-    return [img, gltf_path, gltf_path]
 
-
-def create_3d_obj(rgb_image, depth_image, image_path):
+def create_3d_obj(rgb_image, depth_image, image_path, depth=10):
     depth_o3d = o3d.geometry.Image(depth_image)
     image_o3d = o3d.geometry.Image(rgb_image)
     rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
@@ -60,6 +68,8 @@ def create_3d_obj(rgb_image, depth_image, image_path):
         np.zeros((1, 3)))  # invalidate existing normals
     pcd.estimate_normals(
         search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.01, max_nn=30))
+    pcd.orient_normals_towards_camera_location(
+        camera_location=np.array([0., 0., 1000.]))
     pcd.transform([[1, 0, 0, 0],
                    [0, -1, 0, 0],
                    [0, 0, -1, 0],
@@ -72,7 +82,7 @@ def create_3d_obj(rgb_image, depth_image, image_path):
     print('run Poisson surface reconstruction')
     with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
         mesh_raw, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
-            pcd, depth=10, width=0, scale=1.1, linear_fit=True)
+            pcd, depth=depth, width=0, scale=1.1, linear_fit=True)
 
     voxel_size = max(mesh_raw.get_max_bound() - mesh_raw.get_min_bound()) / 256
     print(f'voxel_size = {voxel_size:e}')
@@ -84,7 +94,6 @@ def create_3d_obj(rgb_image, depth_image, image_path):
     # mesh.remove_vertices_by_mask(vertices_to_remove)
     bbox = pcd.get_axis_aligned_bounding_box()
     mesh_crop = mesh.crop(bbox)
-    print(mesh)
     gltf_path = f'./{image_path.stem}.gltf'
     o3d.io.write_triangle_mesh(
         gltf_path, mesh_crop, write_triangle_uvs=True)
