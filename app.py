@@ -114,5 +114,6 @@ iface = gr.Interface(fn=process_image,
                      title=title,
                      description=description,
                      examples=examples,
-                     allow_flagging="never")
-iface.launch(debug=True, enable_queue=False, cache_examples=True)
+                     allow_flagging="never",
+                     cache_examples=True)
+iface.launch(debug=True, enable_queue=False)
