@@ -105,12 +105,12 @@ description = "This demo is a variation from the original <a href='https://huggi
 examples = [["examples/" + img] for img in os.listdir("examples/")]
 
 iface = gr.Interface(fn=process_image,
-                     inputs=[gr.inputs.Image(
+                     inputs=[gr.Image(
                          type="filepath", label="Input Image")],
-                     outputs=[gr.outputs.Image(label="predicted depth", type="pil"),
-                              gr.outputs.Image3D(label="3d mesh reconstruction", clear_color=[
+                     outputs=[gr.Image(label="predicted depth", type="pil"),
+                              gr.Model3D(label="3d mesh reconstruction", clear_color=[
                                                  1.0, 1.0, 1.0, 1.0]),
-                              gr.outputs.File(label="3d gLTF")],
+                              gr.File(label="3d gLTF")],
                      title=title,
                      description=description,
                      examples=examples,
