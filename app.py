@@ -115,6 +115,5 @@ iface = gr.Interface(
     examples=examples,
     allow_flagging="never",
     cache_examples=False,
-    api_open=False
 )
-iface.launch(debug=True, show_api=False)
+iface.launch(debug=True, show_api=False, api_open=False)
