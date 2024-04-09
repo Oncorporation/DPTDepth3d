@@ -1,7 +1,7 @@
 torch
-git+https://github.com/nielsrogge/transformers.git@add_dpt_redesign#egg=transformers
+transformers
 numpy
 Pillow
-gradio==3.0b8
+gradio==4.26.0
 jinja2
 open3d
