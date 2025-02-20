@@ -44,3 +44,4 @@ workspace.code-workspace
 .pnpm-debug.log
 venv/
 *.db-journal
+/.vs

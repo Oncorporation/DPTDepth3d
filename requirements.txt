@@ -2,6 +2,6 @@ torch
 transformers
 numpy
 Pillow
-gradio==4.26.0
+gradio>=5.16.0
 jinja2
 open3d
