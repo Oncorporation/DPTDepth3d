@@ -5,7 +5,5 @@ sentencepiece
 git+https://github.com/huggingface/peft.git
 numpy
 Pillow>=11.1.0
-torch>=2.4.1
 jinja2
 open3d
-spaces
