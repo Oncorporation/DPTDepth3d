@@ -155,7 +155,9 @@ def create_3d_obj(rgb_image, raw_depth, image_path, depth=10, z_scale=200):
     mesh_crop = mesh.crop(bbox)
 
     # Save the mesh as a GLTF file
-    gltf_path = f"./models/{image_path.stem}.gltf"
+    temp_dir = Path.cwd() / "models"
+    temp_dir.mkdir(exist_ok=True)
+    gltf_path = str(temp_dir / f"{image_path.stem}.gltf")
     o3d.io.write_triangle_mesh(gltf_path, mesh_crop, write_triangle_uvs=True)
     return gltf_path
 
@@ -188,7 +190,7 @@ z_scale_slider = gr.Slider(
 examples = [["examples/" + img] for img in os.listdir("examples/")]
 
 process_image.zerogpu = True
-gr.set_static_paths(paths=["models/","examples/"])
+#gr.set_static_paths(paths=["models/","examples/"])
 iface = gr.Interface(
     fn=process_image,
         inputs=[
@@ -209,8 +211,9 @@ iface = gr.Interface(
     allow_flagging="never",
     cache_examples=False,
     delete_cache=(86400,86400),
-    theme="Surn/Beeuty"
+    theme="Surn/Beeuty",
+    show_progress = 'full'
 )
 
 if __name__ == "__main__":
-    iface.launch(debug=True, show_api=False, favicon_path="./favicon.ico")
+    iface.launch(debug=True, show_api=False, favicon_path="./favicon.ico", allowed_paths=["models/","examples/"])
