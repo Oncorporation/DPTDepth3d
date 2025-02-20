@@ -1,2 +1,2 @@
-python311 -m app.py
+python311 -m app
 pause

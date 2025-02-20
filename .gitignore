@@ -31,6 +31,7 @@ test.txt
 demo/tmp.zip
 demo/files/*.avi
 demo/files/*.mp4
+models/
 
 # Etc
 .idea/*

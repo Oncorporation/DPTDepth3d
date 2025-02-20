@@ -1,7 +1,11 @@
-torch
-transformers
+git+https://github.com/huggingface/diffusers.git
+git+https://github.com/huggingface/transformers.git
+safetensors
+sentencepiece
+git+https://github.com/huggingface/peft.git
 numpy
-Pillow
-gradio>=5.16.0
+Pillow>=11.1.0
+torch>=2.4.1
 jinja2
 open3d
+spaces

@@ -12,7 +12,9 @@ from transformers import DPTForDepthEstimation, DPTImageProcessor
 image_processor = DPTImageProcessor.from_pretrained("Intel/dpt-large")
 model = DPTForDepthEstimation.from_pretrained("Intel/dpt-large")
 
+import spaces
 
+@spaces.GPU(duration=90,progress=gr.Progress(track_tqdm=True))
 def process_image(image_path, resized_width=800, z_scale=208):
     """
     Processes the input image to generate a depth map and a 3D mesh reconstruction.
@@ -47,11 +49,14 @@ def process_image(image_path, resized_width=800, z_scale=208):
         predicted_depth.unsqueeze(1),
         size=(image.height, image.width),
         mode="bicubic",
-        align_corners=True,
+        align_corners=False,
     ).squeeze()
 
     # Normalize the depth image to 8-bit
-    prediction = prediction.cpu().numpy()
+    if torch.cuda.is_available():
+        prediction = prediction.numpy()
+    else:
+        prediction = prediction.cpu().numpy()
     depth_min, depth_max = prediction.min(), prediction.max()
     depth_image = ((prediction - depth_min) / (depth_max - depth_min) * 255).astype("uint8")
 
@@ -61,9 +66,13 @@ def process_image(image_path, resized_width=800, z_scale=208):
         gltf_path = create_3d_obj(np.array(image), prediction, image_path, depth=8, z_scale=z_scale)
 
     img = Image.fromarray(depth_image)
+
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
     return [img, gltf_path, gltf_path]
 
-
+@spaces.GPU()
 def create_3d_obj(rgb_image, raw_depth, image_path, depth=10, z_scale=200):
     """
     Creates a 3D object from RGB and depth images.
@@ -94,8 +103,8 @@ def create_3d_obj(rgb_image, raw_depth, image_path, depth=10, z_scale=200):
     camera_intrinsic = o3d.camera.PinholeCameraIntrinsic(
         width,
         height,
-        fx=1.0,
-        fy=1.0,
+        fx=z_scale,
+        fy=z_scale,
         cx=width / 2.0,
         cy=height / 2.0,
     )
@@ -105,16 +114,16 @@ def create_3d_obj(rgb_image, raw_depth, image_path, depth=10, z_scale=200):
 
     # Scale the Z dimension
     points = np.asarray(pcd.points)
-    depth_scaled = ((raw_depth - raw_depth.min()) / (raw_depth.max() - raw_depth.min())) * z_scale
+    depth_scaled = ((raw_depth - raw_depth.min()) / (raw_depth.max() - raw_depth.min())) * (z_scale*100)
     z_values = depth_scaled.flatten()[:len(points)]
     points[:, 2] *= z_values
     pcd.points = o3d.utility.Vector3dVector(points)
 
     # Estimate and orient normals
     pcd.estimate_normals(
-        search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.01, max_nn=30)
+        search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.01, max_nn=60)
     )
-    pcd.orient_normals_towards_camera_location(camera_location=np.array([0.0, 0.0, 2.0 ]))
+    pcd.orient_normals_towards_camera_location(camera_location=np.array([0.0, 0.0, 1.5 ]))
 
     # Apply transformations
     pcd.transform([[1, 0, 0, 0],
@@ -160,8 +169,8 @@ description = (
 )
 # Create Gradio sliders for resized_width and z_scale
 resized_width_slider = gr.Slider(
-    minimum=400,
-    maximum=1600,
+    minimum=256,
+    maximum=1760,
     step=16,
     value=800,
     label="Resized Width",
@@ -169,15 +178,17 @@ resized_width_slider = gr.Slider(
 )
 
 z_scale_slider = gr.Slider(
-    minimum=160,
-    maximum=1024,
-    step=16,
-    value=208,
+    minimum=0.2,
+    maximum=3.0,
+    step=0.01,
+    value=0.5,
     label="Z-Scale",
     info="Adjust the scaling factor for the Z-axis in the 3D model."
 )
 examples = [["examples/" + img] for img in os.listdir("examples/")]
 
+process_image.zerogpu = True
+gr.set_static_paths(paths=["models/","examples/"])
 iface = gr.Interface(
     fn=process_image,
         inputs=[
@@ -193,8 +204,11 @@ iface = gr.Interface(
     title=title,
     description=description,
     examples=examples,
+    examples_per_page=15,
+    flagging_mode=None,
     allow_flagging="never",
     cache_examples=False,
+    delete_cache=(86400,86400),
     theme="Surn/Beeuty"
 )
 
