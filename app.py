@@ -10,11 +10,8 @@ from transformers import DPTForDepthEstimation, DPTImageProcessor
 
 # Initialize the image processor and depth estimation model
 image_processor = DPTImageProcessor.from_pretrained("Intel/dpt-large")
-model = DPTForDepthEstimation.from_pretrained("Intel/dpt-large")
+depth_model = DPTForDepthEstimation.from_pretrained("Intel/dpt-large", ignore_mismatched_sizes=True)
 
-import spaces
-
-@spaces.GPU(duration=90,progress=gr.Progress(track_tqdm=True))
 def process_image(image_path, resized_width=800, z_scale=208):
     """
     Processes the input image to generate a depth map and a 3D mesh reconstruction.
@@ -41,7 +38,7 @@ def process_image(image_path, resized_width=800, z_scale=208):
 
     # Perform depth estimation
     with torch.no_grad():
-        outputs = model(**encoding)
+        outputs = depth_model(**encoding)
         predicted_depth = outputs.predicted_depth
 
     # Interpolate depth to match the image size
@@ -72,7 +69,6 @@ def process_image(image_path, resized_width=800, z_scale=208):
         torch.cuda.ipc_collect()
     return [img, gltf_path, gltf_path]
 
-@spaces.GPU()
 def create_3d_obj(rgb_image, raw_depth, image_path, depth=10, z_scale=200):
     """
     Creates a 3D object from RGB and depth images.
