@@ -159,9 +159,9 @@ def create_3d_obj(rgb_image, raw_depth, image_path, depth=10, z_scale=200):
 
 
 # Define Gradio interface components
-title = "Demo: Zero-Shot Depth Estimation with DPT + 3D Point Cloud"
+title = "Zero-Shot Depth Estimation with DPT + 3D Point Cloud"
 description = (
-    "This demo is a variation from the original "
+    "This demo by <a href='https://huggingface.co/Surn' target='_blank'>Charles Fettinger</a> is an update to the original "
     "<a href='https://huggingface.co/spaces/nielsr/dpt-depth-estimation' target='_blank'>DPT Demo</a>. "
     "It uses the DPT model to predict the depth of an image and then uses 3D Point Cloud to create a 3D object."
 )
@@ -172,7 +172,7 @@ resized_width_slider = gr.Slider(
     step=16,
     value=800,
     label="Resized Width",
-    info="Adjust the width to which the input image is resized."
+    info="Resize the image based upon width, preserving the aspect ratio"
 )
 
 z_scale_slider = gr.Slider(
@@ -181,7 +181,7 @@ z_scale_slider = gr.Slider(
     step=0.01,
     value=0.5,
     label="Z-Scale",
-    info="Adjust the scaling factor for the Z-axis in the 3D model."
+    info="Scale the amount of 3D model depth, short or tall (can distort)."
 )
 examples = [["examples/" + img] for img in os.listdir("examples/")]
 
