@@ -6,7 +6,7 @@ colorFrom: yellow
 colorTo: red
 python_version: 3.10.13
 sdk: gradio
-sdk_version: 5.19.0
+sdk_version: 5.20.0
 app_file: app.py
 license: apache-2.0
 hf_oauth: true
